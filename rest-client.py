@@ -39,14 +39,54 @@ def doAdd(addr, debug=False):
         print("Response is", response)
         print(json.loads(response.text))
 
-
 def doDotProduct(addr, debug=False):
-    pass
+    a = [random.random() for _ in range(100)]
+    b = [random.random() for _ in range(100)]
+
+    data = {
+        "a": a,
+        "b": b
+    }
+
+    url = addr + "/api/dotproduct"
+
+    response = requests.post(url, json=data, timeout=30)
+    response.raise_for_status()
+
+    result = response.json()
+
+    expected = sum(x * y for x, y in zip(a, b))
+
+    if abs(result["dotproduct"] - expected) > 1e-5:
+        raise ValueError("Incorrect dot product returned")
+
+    if debug:
+        print("Dot product:", result["dotproduct"])
 
 
 def doJsonImage(addr, debug=False):
-    pass
+    img = open(
+        "Flatirons_Winter_Sunrise_edit_2.jpg", "rb"
+    ).read()
 
+    encoded_image = base64.b64encode(img).decode("utf-8")
+
+    data = {
+        "image": encoded_image
+    }
+
+    url = addr + "/api/jsonimage"
+
+    response = requests.post(url, json=data, timeout=30)
+    response.raise_for_status()
+
+    result = response.json()
+
+    if result["width"] <= 0 or result["height"] <= 0:
+        raise ValueError("Invalid image dimensions returned")
+
+    if debug:
+        print("Image dimensions:", result)
 
 # ---------------------------------------------------------
 # Parse command-line arguments
